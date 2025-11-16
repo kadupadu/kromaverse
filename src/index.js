@@ -36,6 +36,8 @@ app.use(helmet({
 }));
 app.use(express.json());
 app.use(cors({ origin: true, credentials: true }));
+// Trust the first proxy (needed for secure cookies on Railway/Heroku)
+app.set('trust proxy', 1);
 
 // Session configuration
 const sessionMiddleware = session({
@@ -49,7 +51,8 @@ const sessionMiddleware = session({
   cookie: { 
     maxAge: 1000 * 60 * 60 * 24, // 1 day
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
   }
 });
 app.use(sessionMiddleware);
@@ -72,17 +75,9 @@ app.post('/api/register', async (req, res) => {
   try {
     const { username, password } = req.body;
     
-    // Validation
+    // Minimal validation: only require presence; allow any values
     if (!username || !password) {
       return res.status(400).json({ error: 'missing', message: 'Username and password required' });
-    }
-    
-    if (username.length < 3 || username.length > 20) {
-      return res.status(400).json({ error: 'invalid', message: 'Username must be 3-20 characters' });
-    }
-    
-    if (password.length < 4) {
-      return res.status(400).json({ error: 'invalid', message: 'Password must be at least 4 characters' });
     }
     
     // Check if user exists
@@ -115,6 +110,7 @@ app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
+    // Minimal validation: just require presence
     if (!username || !password) {
       return res.status(400).json({ error: 'missing', message: 'Username and password required' });
     }
