@@ -90,16 +90,28 @@ app.post('/api/register', async (req, res) => {
     
     // Create user
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({ username, passwordHash: hash });
+    let user;
+    try {
+      user = await User.create({ username, passwordHash: hash });
+    } catch (e) {
+      console.error('Mongo create user error:', e);
+      return res.status(500).json({ error: 'db', message: 'Database user create error' });
+    }
     
     req.session.userId = user._id;
-    
-    res.json({ 
-      ok: true, 
-      user: { 
-        id: user._id, 
-        username: user.username 
-      } 
+    // Force immediate persistence so Socket.IO can see it without refresh
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error (register):', err);
+        return res.status(500).json({ error: 'session', message: 'Registration session error' });
+      }
+      res.json({ 
+        ok: true, 
+        user: { 
+          id: user._id, 
+          username: user.username 
+        } 
+      });
     });
     
   } catch (error) {
@@ -117,7 +129,13 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'missing', message: 'Username and password required' });
     }
     
-    const user = await User.findOne({ username });
+    let user;
+    try {
+      user = await User.findOne({ username });
+    } catch (e) {
+      console.error('Mongo find user error:', e);
+      return res.status(500).json({ error: 'db', message: 'Database lookup error' });
+    }
     if (!user) {
       return res.status(400).json({ error: 'invalid', message: 'Invalid credentials' });
     }
@@ -128,13 +146,18 @@ app.post('/api/login', async (req, res) => {
     }
     
     req.session.userId = user._id;
-    
-    res.json({ 
-      ok: true, 
-      user: { 
-        id: user._id, 
-        username: user.username 
-      } 
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error (login):', err);
+        return res.status(500).json({ error: 'session', message: 'Login session error' });
+      }
+      res.json({ 
+        ok: true, 
+        user: { 
+          id: user._id, 
+          username: user.username 
+        } 
+      });
     });
     
   } catch (error) {
@@ -195,6 +218,16 @@ io.on('connection', (socket) => {
     console.log(`User connected: ${currentId || 'anonymous'}`);
   };
   logUserId();
+
+  // Allow client to probe auth immediately after login without refresh
+  socket.on('auth_probe', (cb) => {
+    const id = socket.request.session?.userId?.toString() || null;
+    if (typeof cb === 'function') {
+      cb({ authenticated: !!id, userId: id });
+    } else {
+      socket.emit('auth_status', { authenticated: !!id, userId: id });
+    }
+  });
   
   socket.on('place_pixel', async ({ x, y, color }) => {
     try {

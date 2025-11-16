@@ -179,17 +179,17 @@ window.addEventListener('mousemove', (e) => {
 let lastTouchDistance = 0;
 let lastTouchX = 0;
 let lastTouchY = 0;
+let touchDragDistance = 0;
 
 viewport.addEventListener('touchstart', (e) => {
+  touchDragDistance = 0;
   if (e.touches.length === 1) {
-    // Single touch - pan
-    if (e.target === viewport || e.target.id === 'gridOverlay' || !e.target.classList.contains('cell')) {
-      isPanning = true;
-      startX = e.touches[0].clientX - translateX;
-      startY = e.touches[0].clientY - translateY;
-      lastTouchX = e.touches[0].clientX;
-      lastTouchY = e.touches[0].clientY;
-    }
+    // Always allow panning start with single finger
+    isPanning = true;
+    startX = e.touches[0].clientX - translateX;
+    startY = e.touches[0].clientY - translateY;
+    lastTouchX = e.touches[0].clientX;
+    lastTouchY = e.touches[0].clientY;
   } else if (e.touches.length === 2) {
     // Two finger touch - zoom
     isPanning = false;
@@ -203,8 +203,11 @@ viewport.addEventListener('touchmove', (e) => {
   if (e.touches.length === 1 && isPanning) {
     // Pan
     e.preventDefault();
-    translateX = e.touches[0].clientX - startX;
-    translateY = e.touches[0].clientY - startY;
+    const newX = e.touches[0].clientX - startX;
+    const newY = e.touches[0].clientY - startY;
+    touchDragDistance += Math.abs(newX - translateX) + Math.abs(newY - translateY);
+    translateX = newX;
+    translateY = newY;
     updateTransform();
   } else if (e.touches.length === 2) {
     // Pinch zoom
@@ -380,8 +383,8 @@ function onCellClick(e) {
     e.preventDefault();
   }
   
-  // Ignore clicks that were actually drags
-  if (dragDistance > 5) {
+  // Ignore clicks that were actually drags (mouse or touch)
+  if (dragDistance > 5 || touchDragDistance > 20) { // touch accumulates faster, use larger threshold
     return;
   }
   
