@@ -190,8 +190,28 @@ body {
 /* ===== COLOR PALETTE ===== */
 .palette {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.65rem;
+}
+
+.color-picker-swatch {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ff0000 0%, #ff00ff 17%, #0000ff 33%, #00ffff 50%, #00ff00 67%, #ffff00 83%, #ff0000 100%) !important;
+}
+
+.color-picker-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+}
+
+/* Hide palette toggle on desktop, show only on mobile */
+.palette-toggle {
+  display: none;
 }
 
 .color-swatch {
@@ -459,6 +479,26 @@ body {
   border-bottom: 2px solid var(--border-light);
 }
 
+.canvas-cooldown {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 0.4rem 0.75rem;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.canvas-cooldown.ready {
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.canvas-cooldown.cooldown {
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
 .zoom-controls {
   display: flex;
   align-items: center;
@@ -623,7 +663,11 @@ body {
 }
 
 @media (max-width: 768px) {
-  :root { --mobile-palette-height: 150px; }
+  :root { 
+    --mobile-header-height: 56px;
+    --mobile-palette-height-open: 25vh;
+    --mobile-palette-height-closed: 36px;
+  }
   body {
     font-size: 14px;
   }
@@ -666,8 +710,8 @@ body {
 
   .main {
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem;
+    gap: 0.25rem;
+    padding: 0.25rem;
   }
   
   .controls {
@@ -701,7 +745,34 @@ body {
     background: var(--card-bg);
     border-top: 2px solid var(--border-light);
     box-shadow: 0 -8px 24px rgba(0,0,0,0.08);
-    padding: 0.5rem 0.75rem 0.75rem;
+    padding: 0.25rem 0.75rem 0.5rem;
+    max-height: var(--mobile-palette-height-open);
+    overflow: auto;
+    transition: max-height var(--transition-normal);
+  }
+  .palette-section.collapsed {
+    max-height: var(--mobile-palette-height-closed);
+    overflow: hidden;
+  }
+  .palette-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+    margin: 0.1rem auto 0.35rem;
+    padding: 0.25rem 0.5rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 999px;
+    border: 2px solid var(--border-medium);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .palette-section.collapsed .palette,
+  .palette-section.collapsed .selected-color-display,
+  .palette-section.collapsed .section-title {
+    display: none !important;
   }
   .palette-section .section-title { display: none; }
   .palette {
@@ -728,14 +799,15 @@ body {
     display: none;
   }
   
-  .canvas-area { min-height: calc(100vh - var(--mobile-palette-height) - 64px); }
+  .canvas-area { min-height: calc(100vh - var(--mobile-header-height) - var(--mobile-palette-height-open)); }
+  body.palette-collapsed .canvas-area { min-height: calc(100vh - var(--mobile-header-height) - var(--mobile-palette-height-closed)); }
   
   .canvas-container {
     height: 100%;
   }
   
   .canvas-toolbar {
-    padding: 0.6rem 0.75rem;
+    padding: 0.4rem 0.5rem;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
@@ -750,21 +822,6 @@ body {
     font-size: 1.3rem;
   }
 
-  /* Floating cooldown timer badge */
-  .mobile-timer {
-    position: fixed;
-    right: 0.75rem;
-    bottom: calc(var(--mobile-palette-height) + 0.75rem);
-    z-index: 260;
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-light);
-    border-radius: 999px;
-    padding: 0.4rem 0.75rem;
-    font-weight: 700;
-    color: var(--text-secondary);
-    box-shadow: var(--shadow-md);
-  }
-  
   .canvas-size {
     font-size: 0.8rem;
     padding: 0.35rem 0.65rem;
@@ -772,7 +829,8 @@ body {
   
   .viewport { touch-action: none; cursor: default; }
   /* Add bottom safe space so bottom palette doesn't cover key content */
-  .canvas-container { padding-bottom: calc(var(--mobile-palette-height) + 8px); }
+  .canvas-container { padding-bottom: calc(var(--mobile-palette-height-open) + 6px); }
+  body.palette-collapsed .canvas-container { padding-bottom: calc(var(--mobile-palette-height-closed) + 6px); }
   
   .cell {
     cursor: pointer;

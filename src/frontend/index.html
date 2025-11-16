@@ -42,6 +42,7 @@
   <main class="main">
     <aside class="controls">
       <div class="control-section palette-section">
+        <button id="paletteToggle" class="palette-toggle" aria-expanded="true" aria-controls="palette">Hide Palette</button>
         <h3 class="section-title">Color Palette</h3>
         <div class="palette" id="palette"></div>
         <div class="selected-color-display">
@@ -106,6 +107,7 @@
             <button class="zoom-btn" id="zoomIn" title="Zoom In">+</button>
             <button class="zoom-btn" id="resetView" title="Reset View">⟲</button>
           </div>
+          <div id="cooldownCanvas" class="canvas-cooldown">Ready</div>
           <div class="canvas-info">
             <span class="canvas-size">64×64 Canvas</span>
           </div>
@@ -119,6 +121,5 @@
   </main>
 
   <div id="notification" class="notification"></div>
-  <div id="mobileTimer" class="mobile-timer"></div>
 </body>
 </html>

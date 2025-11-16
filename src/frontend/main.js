@@ -3,20 +3,19 @@ const socket = io();
 const GRID_SIZE = 64;
 const CELL_SIZE = 10;
 
-// 12 beautiful color choices
+// 11 popular solid colors + custom picker
 const PALETTE_COLORS = [
-  '#FF6B6B', // Red
-  '#4ECDC4', // Teal
-  '#45B7D1', // Blue
-  '#FFA07A', // Light Salmon
-  '#98D8C8', // Mint
-  '#F7DC6F', // Yellow
-  '#BB8FCE', // Purple
-  '#F8B739', // Orange
-  '#52B788', // Green
-  '#E91E63', // Pink
-  '#546E7A', // Blue Gray
-  '#FFFFFF'  // White
+  '#FF0000', // Red
+  '#FFA500', // Orange
+  '#FFFF00', // Yellow
+  '#00FF00', // Green
+  '#00FFFF', // Cyan
+  '#0000FF', // Blue
+  '#800080', // Purple
+  '#FF69B4', // Pink
+  '#FFFFFF', // White
+  '#808080', // Gray
+  '#000000'  // Black
 ];
 
 let selectedColor = PALETTE_COLORS[0];
@@ -57,7 +56,8 @@ const resetViewBtn = document.getElementById('resetView');
 const zoomLevelEl = document.getElementById('zoomLevel');
 const notificationEl = document.getElementById('notification');
 const mobileAuth = document.getElementById('mobileAuth');
-const mobileTimer = document.getElementById('mobileTimer');
+const cooldownCanvasEl = document.getElementById('cooldownCanvas');
+const paletteToggle = document.getElementById('paletteToggle');
 
 // ===== NOTIFICATION SYSTEM =====
 function showNotification(message, type = 'info') {
@@ -90,6 +90,27 @@ PALETTE_COLORS.forEach((color, index) => {
   });
   
   paletteEl.appendChild(swatch);
+});
+
+// Add custom color picker as 12th option
+const pickerSwatch = document.createElement('div');
+pickerSwatch.className = 'color-swatch color-picker-swatch';
+pickerSwatch.innerHTML = '<input type="color" id="colorPicker" class="color-picker-input" value="#FF1493" />';
+paletteEl.appendChild(pickerSwatch);
+
+const colorPicker = document.getElementById('colorPicker');
+colorPicker.addEventListener('input', (e) => {
+  const customColor = e.target.value.toUpperCase();
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  pickerSwatch.classList.add('selected');
+  selectedColor = customColor;
+  selectedColorLabel.textContent = customColor;
+  colorPreview.style.background = customColor;
+});
+colorPicker.addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  pickerSwatch.classList.add('selected');
 });
 
 // Initialize color display
@@ -337,6 +358,22 @@ if (mobileAuth) {
   });
 }
 
+// Palette collapse/expand toggle
+if (paletteToggle) {
+  const paletteSection = document.querySelector('.palette-section');
+  const updateToggleLabel = (collapsed) => {
+    paletteToggle.textContent = collapsed ? 'Show Palette' : 'Hide Palette';
+    paletteToggle.setAttribute('aria-expanded', (!collapsed).toString());
+  };
+  paletteToggle.addEventListener('click', () => {
+    const collapsed = paletteSection.classList.toggle('collapsed');
+    document.body.classList.toggle('palette-collapsed', collapsed);
+    updateToggleLabel(collapsed);
+  });
+  // Initialize label state
+  updateToggleLabel(false);
+}
+
 // ===== LOAD USER SESSION =====
 async function loadMe() {
   try {
@@ -410,6 +447,9 @@ function onCellClick(e) {
   this.classList.add('placing');
   setTimeout(() => this.classList.remove('placing'), 300);
   
+  // Start 3-second cooldown immediately
+  startCooldown(3000);
+  
   // Emit socket event
   socket.emit('place_pixel', { x, y, color: selectedColor });
 }
@@ -419,15 +459,6 @@ socket.on('pixel_update', ({ x, y, color, user: username }) => {
   paintCell(x, y, color);
   pixelCount++;
   updatePixelCount();
-  
-  // Show notification for own pixels
-  if (user && username === user.username) {
-    showNotification('Pixel placed! 🎨', 'success');
-  }
-});
-
-socket.on('cooldown', ({ left }) => {
-  startCooldown(left);
 });
 
 socket.on('err', (message) => {
@@ -452,11 +483,17 @@ socket.on('connect_error', () => {
 
 // ===== COOLDOWN SYSTEM =====
 function startCooldown(ms) {
+  // Clear any existing timer
+  if (cooldownTimer) {
+    clearInterval(cooldownTimer);
+    cooldownTimer = null;
+  }
+  
+  // Set initial cooldown based on milliseconds from server
   cooldownLeft = Math.ceil(ms / 1000);
   updateCooldownDisplay();
   
-  if (cooldownTimer) clearInterval(cooldownTimer);
-  
+  // Start countdown
   cooldownTimer = setInterval(() => {
     cooldownLeft--;
     updateCooldownDisplay();
@@ -464,6 +501,8 @@ function startCooldown(ms) {
     if (cooldownLeft <= 0) {
       clearInterval(cooldownTimer);
       cooldownTimer = null;
+      cooldownLeft = 0;
+      updateCooldownDisplay();
     }
   }, 1000);
 }
@@ -472,11 +511,17 @@ function updateCooldownDisplay() {
   if (cooldownLeft > 0) {
     cooldownEl.textContent = `Wait ${cooldownLeft}s`;
     cooldownEl.className = 'status-text cooldown';
-    if (mobileTimer) mobileTimer.textContent = `⏱️ ${cooldownLeft}s`;
+    if (cooldownCanvasEl) {
+      cooldownCanvasEl.textContent = `⏱️ ${cooldownLeft}s`;
+      cooldownCanvasEl.className = 'canvas-cooldown cooldown';
+    }
   } else {
     cooldownEl.textContent = 'Ready to place! ✓';
     cooldownEl.className = 'status-text ready';
-    if (mobileTimer) mobileTimer.textContent = '✓ Ready';
+    if (cooldownCanvasEl) {
+      cooldownCanvasEl.textContent = '✓ Ready';
+      cooldownCanvasEl.className = 'canvas-cooldown ready';
+    }
   }
 }
 

@@ -4,12 +4,13 @@ const User = require('./models/User');
 const Pixel = require('./models/Pixel');
 
 const MONGO = process.env.MONGO || 'mongodb://localhost:27017/kromaverse';
+const DB_NAME = process.env.MONGO_DB || 'kromaverse';
 
 async function purgeDatabase() {
   try {
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(MONGO);
-    console.log('✓ Connected to MongoDB');
+    await mongoose.connect(MONGO, { dbName: DB_NAME });
+    console.log(`✓ Connected to MongoDB (db: ${DB_NAME})`);
     
     console.log('\nPurging database...');
     
