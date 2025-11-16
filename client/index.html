@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>KromaVerse - Collaborative Pixel Canvas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
+  <meta name="description" content="KromaVerse - A collaborative pixel art canvas where creativity meets community" />
+  <meta name="theme-color" content="#ff6b9d" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="stylesheet" href="main.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script defer src="/socket.io/socket.io.js"></script>
+  <script defer src="main.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">🎨</span>
+      <span class="brand-text">KromaVerse</span>
+    </div>
+    <nav class="menu">
+      <a href="/info" class="menu-link">
+        <span class="menu-icon">ℹ️</span>
+        <span>Info</span>
+      </a>
+      <a href="/docs" class="menu-link">
+        <span class="menu-icon">📚</span>
+        <span>Docs</span>
+      </a>
+      <a href="https://github.com/yourrepo" target="_blank" rel="noopener noreferrer" class="menu-link">
+        <span class="menu-icon">🐙</span>
+        <span>GitHub</span>
+      </a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <aside class="controls">
+      <div class="control-section">
+        <h3 class="section-title">Color Palette</h3>
+        <div class="palette" id="palette"></div>
+        <div class="selected-color-display">
+          <div class="color-preview" id="colorPreview"></div>
+          <div class="color-info">
+            <span class="color-label">Selected</span>
+            <span class="color-code" id="selectedColorLabel">#000000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <h3 class="section-title">Status</h3>
+        <div class="status-display">
+          <div class="status-item">
+            <span class="status-icon">⏱️</span>
+            <span id="cooldown" class="status-text">Ready</span>
+          </div>
+          <div class="status-item">
+            <span class="status-icon">📍</span>
+            <span id="pixelCount" class="status-text">0 pixels placed</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-section auth-section">
+        <h3 class="section-title">Account</h3>
+        <div class="auth" id="authBox">
+          <div id="userInfo" class="user-info"></div>
+          <div id="authForms" class="auth-forms">
+            <div class="input-group">
+              <input id="username" placeholder="Username" autocomplete="username" />
+            </div>
+            <div class="input-group">
+              <input id="password" placeholder="Password" type="password" autocomplete="current-password" />
+            </div>
+            <div class="button-group">
+              <button id="btnLogin" class="btn btn-primary">Login</button>
+              <button id="btnReg" class="btn btn-secondary">Register</button>
+            </div>
+          </div>
+          <button id="btnLogout" class="btn btn-logout" style="display:none">Logout</button>
+        </div>
+      </div>
+
+      <div class="control-section tips-section">
+        <h3 class="section-title">Controls</h3>
+        <div class="tips">
+          <div class="tip">🖱️ <strong>Click</strong> to place pixels</div>
+          <div class="tip">🔍 <strong>Scroll</strong> to zoom</div>
+          <div class="tip">✋ <strong>Drag</strong> to pan</div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="canvas-area">
+      <div class="canvas-container">
+        <div class="canvas-toolbar">
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomOut" title="Zoom Out">−</button>
+            <span class="zoom-level" id="zoomLevel">100%</span>
+            <button class="zoom-btn" id="zoomIn" title="Zoom In">+</button>
+            <button class="zoom-btn" id="resetView" title="Reset View">⟲</button>
+          </div>
+          <div class="canvas-info">
+            <span class="canvas-size">64×64 Canvas</span>
+          </div>
+        </div>
+        <div id="viewport" class="viewport">
+          <div id="grid" class="grid"></div>
+          <div id="gridOverlay" class="grid-overlay"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="notification" class="notification"></div>
+</body>
+</html>
