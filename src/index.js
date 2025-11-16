@@ -1,4 +1,5 @@
-require('dotenv').config();
+// Ensure .env is loaded from this folder regardless of CWD
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
 const http = require('http');
 const mongoose = require('mongoose');
@@ -54,12 +55,12 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '../client')));
+// Serve static files from new frontend path
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Root route
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/index.html'));
+  res.sendFile(path.join(__dirname, 'frontend/index.html'));
 });
 
 // Expose session to Socket.IO
@@ -267,6 +268,19 @@ io.on('connection', (socket) => {
 });
 
 // ==================== START SERVER ====================
+// Helpful error for common startup issues
+server.on('error', (err) => {
+  if (err && err.code === 'EADDRINUSE') {
+    console.error(`\n✗ Port ${PORT} is already in use.`);
+    console.error('Fix options:');
+    console.error(`  - Stop the existing process using: lsof -i :${PORT} -sTCP:LISTEN -n -P`);
+    console.error('    then kill the PID shown: kill -TERM <PID>');
+    console.error(`  - Or run on another port: PORT=${PORT + 1} node .`);
+    process.exit(1);
+  }
+  throw err;
+});
+
 server.listen(PORT, () => {
   console.log(`🎨 KromaVerse server running on http://localhost:${PORT}`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
