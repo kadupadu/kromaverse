@@ -117,9 +117,27 @@
       </span>
       <span class="brand-text">KromaVerse</span>
     </div>
+    <a href="/" class="menu-link mobile-visible-btn" aria-label="Canvas">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 12l9-9 9 9" />
+        <path d="M4 11v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9" />
+      </svg>
+      <span>Canvas</span>
+    </a>
+    <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Menu">
+      <svg class="hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+      <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
     <div id="mobileAuth" class="mobile-auth" style="display:none;"></div>
-    <nav class="menu">
-      <a href="/" class="menu-link" aria-label="Canvas">
+    <nav class="menu" id="mainMenu">
+      <a href="/" class="menu-link desktop-only" aria-label="Canvas">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 12l9-9 9 9" />
           <path d="M4 11v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9" />
@@ -147,6 +165,13 @@
         </svg>
         <span>GitHub</span>
       </a>
+      <button id="authMenuBtn" class="menu-link auth-menu-link desktop-only" aria-label="Account">
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5z" />
+          <path d="M3 22a9 9 0 0 1 18 0" />
+        </svg>
+        <span id="authMenuLabel">Login</span>
+      </button>
     </nav>
   </header>
 
@@ -229,5 +254,27 @@
       <a href="/" class="cta-button">Jump to Canvas ➜</a>
     </div>
   </main>
+
+  <script>
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mainMenu = document.getElementById('mainMenu');
+    
+    if (mobileMenuBtn && mainMenu) {
+      mobileMenuBtn.addEventListener('click', () => {
+        const isOpen = mainMenu.classList.toggle('open');
+        const hamburgerIcon = mobileMenuBtn.querySelector('.hamburger-icon');
+        const closeIcon = mobileMenuBtn.querySelector('.close-icon');
+        
+        if (isOpen) {
+          hamburgerIcon.style.display = 'none';
+          closeIcon.style.display = 'block';
+        } else {
+          hamburgerIcon.style.display = 'block';
+          closeIcon.style.display = 'none';
+        }
+      });
+    }
+  </script>
 </body>
 </html>

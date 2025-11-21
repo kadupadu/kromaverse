@@ -30,7 +30,25 @@
       </span>
       <span class="brand-text">KromaVerse</span>
     </div>
-    <nav class="menu">
+    <button id="authMenuBtn" class="menu-link auth-menu-link auth-menu-btn mobile-visible-btn" aria-label="Account">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5z" />
+        <path d="M3 22a9 9 0 0 1 18 0" />
+      </svg>
+      <span class="auth-menu-label">Login</span>
+    </button>
+    <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Menu">
+      <svg class="hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+      <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+    <nav class="menu" id="mainMenu">
       <a href="/info" class="menu-link" aria-label="Info">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="10" />
@@ -52,14 +70,15 @@
         </svg>
         <span>GitHub</span>
       </a>
-      <button id="authMenuBtn" class="menu-link auth-menu-link" aria-label="Account">
+      <button class="menu-link auth-menu-link auth-menu-btn desktop-only" aria-label="Account">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5z" />
           <path d="M3 22a9 9 0 0 1 18 0" />
         </svg>
-        <span id="authMenuLabel">Login</span>
+        <span class="auth-menu-label">Login</span>
       </button>
     </nav>
+  </header>
   </header>
 
   <main class="main">
@@ -105,13 +124,6 @@
               <span class="stat-icon">⏱️</span>
               +1 turn in <span id="refillSeconds">10</span>s
             </div>
-            <div class="canvas-stat" id="pixelsDisplay" style="display:none;">
-              <span class="stat-icon">📍</span>
-              <span id="pixelsCount">0</span> pixels
-            </div>
-          </div>
-          <div class="canvas-info">
-            <span class="canvas-size">128×128 Canvas</span>
           </div>
         </div>
         <div id="viewport" class="viewport">

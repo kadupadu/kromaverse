@@ -42,7 +42,6 @@ const paletteEl = document.getElementById('palette');
 const colorPreview = document.getElementById('colorPreview');
 const selectedColorLabel = document.getElementById('selectedColorLabel');
 const turnsCountEl = document.getElementById('turnsCount');
-const pixelCountEl = document.getElementById('pixelsCount'); // Fixed: was 'pixelCount', should be 'pixelsCount'
 const viewport = document.getElementById('viewport');
 
 const usernameInp = document.getElementById('usernameModal');
@@ -58,8 +57,6 @@ const zoomOutBtn = document.getElementById('zoomOut');
 const resetViewBtn = document.getElementById('resetView');
 const zoomLevelEl = document.getElementById('zoomLevel');
 const notificationEl = document.getElementById('notification');
-const authMenuBtn = document.getElementById('authMenuBtn');
-const authMenuLabel = document.getElementById('authMenuLabel');
 const authModal = document.getElementById('authModal');
 const authModalClose = document.getElementById('authModalClose');
 const authModalTitle = document.getElementById('authModalTitle');
@@ -408,30 +405,32 @@ function renderUser() {
     userInfo.style.display = 'block';
     btnLogout.style.display = 'block';
     authForms.style.display = 'none';
-    authMenuLabel.textContent = user.username;
+    document.querySelectorAll('.auth-menu-label').forEach(label => {
+      label.textContent = user.username;
+    });
     // Show stats
     document.getElementById('turnsDisplay').style.display = 'block';
-    document.getElementById('pixelsDisplay').style.display = 'block';
-    if (typeof user.pixelsPlaced === 'number') {
-      document.getElementById('pixelsCount').textContent = user.pixelsPlaced;
-    }
   } else {
     authModalTitle.textContent = 'Login / Register';
     userInfo.style.display = 'none';
     btnLogout.style.display = 'none';
     authForms.style.display = 'flex';
-    authMenuLabel.textContent = 'Login';
+    document.querySelectorAll('.auth-menu-label').forEach(label => {
+      label.textContent = 'Login';
+    });
     // Hide stats when not logged in
     document.getElementById('turnsDisplay').style.display = 'none';
     document.getElementById('refillTimer').style.display = 'none';
-    document.getElementById('pixelsDisplay').style.display = 'none';
   }
 }
 
 // Auth modal toggle
-if (authMenuBtn) {
-  authMenuBtn.addEventListener('click', () => {
-    authModal.classList.add('show');
+const authMenuBtns = document.querySelectorAll('.auth-menu-btn');
+if (authMenuBtns.length > 0) {
+  authMenuBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      authModal.classList.add('show');
+    });
   });
 }
 if (authModalClose) {
@@ -499,7 +498,6 @@ async function fetchAndPaint() {
     
     if (data.pixels) {
       pixelCount = data.pixels.length;
-      updatePixelCount();
       
       data.pixels.forEach(p => {
         paintCell(p.x, p.y, p.color);
@@ -518,10 +516,6 @@ function paintCell(x, y, color) {
   gridCtx.strokeStyle = 'rgba(203, 213, 224, 0.4)';
   gridCtx.lineWidth = 0.5;
   gridCtx.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-}
-
-function updatePixelCount() {
-  pixelCountEl.textContent = `${pixelCount.toLocaleString()}`;
 }
 
 function updateTurnsDisplay() {
@@ -635,11 +629,9 @@ function onCanvasClick(e) {
 socket.on('pixel_update', ({ x, y, color, user: username }) => {
   paintCell(x, y, color);
   pixelCount++;
-  updatePixelCount();
   // If this is our pixel, update our count
   if (username === user?.username && typeof user.pixelsPlaced === 'number') {
     user.pixelsPlaced++;
-    document.getElementById('pixelsCount').textContent = user.pixelsPlaced;
   }
 });
 
@@ -680,6 +672,37 @@ socket.on('disconnect', () => {
 socket.on('connect_error', () => {
   showNotification('Connection error', 'error');
 });
+
+// ===== MOBILE MENU TOGGLE =====
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mainMenu = document.getElementById('mainMenu');
+
+if (mobileMenuBtn && mainMenu) {
+  mobileMenuBtn.addEventListener('click', () => {
+    const isOpen = mainMenu.classList.toggle('open');
+    const hamburgerIcon = mobileMenuBtn.querySelector('.hamburger-icon');
+    const closeIcon = mobileMenuBtn.querySelector('.close-icon');
+    
+    if (isOpen) {
+      hamburgerIcon.style.display = 'none';
+      closeIcon.style.display = 'block';
+    } else {
+      hamburgerIcon.style.display = 'block';
+      closeIcon.style.display = 'none';
+    }
+  });
+  
+  // Close menu when clicking a link
+  mainMenu.querySelectorAll('.menu-link').forEach(link => {
+    link.addEventListener('click', () => {
+      mainMenu.classList.remove('open');
+      const hamburgerIcon = mobileMenuBtn.querySelector('.hamburger-icon');
+      const closeIcon = mobileMenuBtn.querySelector('.close-icon');
+      hamburgerIcon.style.display = 'block';
+      closeIcon.style.display = 'none';
+    });
+  });
+}
 
 // ===== INITIALIZE APP =====
 async function init() {
