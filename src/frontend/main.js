@@ -105,35 +105,145 @@ function rebuildPalette() {
     });
     paletteEl.appendChild(swatch);
   });
-  // Add color picker swatch
+  // Add custom color picker swatch
   const pickerSwatch = document.createElement('div');
   pickerSwatch.className = 'color-swatch color-picker-swatch';
-  pickerSwatch.innerHTML = '<input type="color" id="colorPicker" class="color-picker-input" value="#FF1493" />';
+  pickerSwatch.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/></svg>';
+  pickerSwatch.title = 'Custom Color Picker';
   paletteEl.appendChild(pickerSwatch);
-  const colorPicker = document.getElementById('colorPicker');
-  colorPicker.addEventListener('input', (e) => {
-    const picked = e.target.value.toUpperCase();
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-    pickerSwatch.classList.add('selected');
-    selectedColor = picked;
-    selectedColorLabel.textContent = picked;
-    colorPreview.style.background = picked;
-    // Debounce save: only persist after 500ms of no changes
-    if (pickerDebounceTimer) clearTimeout(pickerDebounceTimer);
-    pickerDebounceTimer = setTimeout(() => {
-      if (user && !customColors.includes(picked)) {
-        saveCustomColor(picked);
-      }
-    }, 500);
+  
+  pickerSwatch.addEventListener('click', () => {
+    showCustomColorPicker();
   });
-  colorPicker.addEventListener('click', (e) => {
-    e.stopPropagation();
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-    pickerSwatch.classList.add('selected');
-  });
+  
   // Initialize display values
   colorPreview.style.background = selectedColor;
   selectedColorLabel.textContent = selectedColor;
+}
+
+let customPickerModal = null;
+function showCustomColorPicker() {
+  if (customPickerModal) {
+    customPickerModal.remove();
+  }
+  
+  const modal = document.createElement('div');
+  modal.className = 'custom-picker-modal';
+  modal.innerHTML = `
+    <div class="custom-picker-content">
+      <div class="custom-picker-header">
+        <h3>Custom Color</h3>
+        <button class="custom-picker-close" aria-label="Close">×</button>
+      </div>
+      <div class="custom-picker-preview" id="customPickerPreview"></div>
+      <div class="custom-picker-sliders">
+        <div class="slider-group">
+          <label>R: <span id="rValue">255</span></label>
+          <input type="range" id="rSlider" min="0" max="255" value="255">
+        </div>
+        <div class="slider-group">
+          <label>G: <span id="gValue">20</span></label>
+          <input type="range" id="gSlider" min="0" max="255" value="20">
+        </div>
+        <div class="slider-group">
+          <label>B: <span id="bValue">147</span></label>
+          <input type="range" id="bSlider" min="0" max="255" value="147">
+        </div>
+      </div>
+      <div class="custom-picker-hex">
+        <label>Hex:</label>
+        <input type="text" id="hexInput" value="#FF1493" maxlength="7">
+      </div>
+      <div class="custom-picker-actions">
+        <button class="btn btn-secondary" id="pickerCancel">Cancel</button>
+        <button class="btn btn-primary" id="pickerApply">Apply</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  customPickerModal = modal;
+  
+  const rSlider = document.getElementById('rSlider');
+  const gSlider = document.getElementById('gSlider');
+  const bSlider = document.getElementById('bSlider');
+  const rValue = document.getElementById('rValue');
+  const gValue = document.getElementById('gValue');
+  const bValue = document.getElementById('bValue');
+  const hexInput = document.getElementById('hexInput');
+  const preview = document.getElementById('customPickerPreview');
+  
+  function updateColor() {
+    const r = parseInt(rSlider.value);
+    const g = parseInt(gSlider.value);
+    const b = parseInt(bSlider.value);
+    const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+    rValue.textContent = r;
+    gValue.textContent = g;
+    bValue.textContent = b;
+    hexInput.value = hex;
+    preview.style.background = hex;
+  }
+  
+  function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+  
+  rSlider.addEventListener('input', updateColor);
+  gSlider.addEventListener('input', updateColor);
+  bSlider.addEventListener('input', updateColor);
+  
+  hexInput.addEventListener('input', (e) => {
+    const hex = e.target.value;
+    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+      const rgb = hexToRgb(hex);
+      if (rgb) {
+        rSlider.value = rgb.r;
+        gSlider.value = rgb.g;
+        bSlider.value = rgb.b;
+        updateColor();
+      }
+    }
+  });
+  
+  document.getElementById('pickerCancel').addEventListener('click', () => {
+    modal.remove();
+    customPickerModal = null;
+  });
+  
+  document.getElementById('pickerApply').addEventListener('click', () => {
+    const picked = hexInput.value.toUpperCase();
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+    document.querySelector('.color-picker-swatch').classList.add('selected');
+    selectedColor = picked;
+    selectedColorLabel.textContent = picked;
+    colorPreview.style.background = picked;
+    
+    if (user && !customColors.includes(picked)) {
+      saveCustomColor(picked);
+    }
+    
+    modal.remove();
+    customPickerModal = null;
+  });
+  
+  document.querySelector('.custom-picker-close').addEventListener('click', () => {
+    modal.remove();
+    customPickerModal = null;
+  });
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+      customPickerModal = null;
+    }
+  });
+  
+  updateColor();
 }
 
 async function saveCustomColor(color) {
