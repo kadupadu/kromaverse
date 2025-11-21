@@ -165,16 +165,14 @@ if (gridCanvas && gridCtx) {
   // Fill with white background
   gridCtx.fillStyle = '#FFFFFF';
   gridCtx.fillRect(0, 0, gridCanvas.width, gridCanvas.height);
-  // Draw grid lines
-  gridCtx.strokeStyle = 'rgba(203, 213, 224, 0.4)';
-  gridCtx.lineWidth = 0.5;
+  // Draw subtle grid lines
+  gridCtx.strokeStyle = '#f1f5f9';
+  gridCtx.lineWidth = 1;
   for (let i = 0; i <= GRID_SIZE; i++) {
-    // Vertical lines
     gridCtx.beginPath();
     gridCtx.moveTo(i * CELL_SIZE, 0);
     gridCtx.lineTo(i * CELL_SIZE, gridCanvas.height);
     gridCtx.stroke();
-    // Horizontal lines
     gridCtx.beginPath();
     gridCtx.moveTo(0, i * CELL_SIZE);
     gridCtx.lineTo(gridCanvas.width, i * CELL_SIZE);
@@ -256,8 +254,17 @@ viewport.addEventListener('mousedown', (e) => {
 });
 
 window.addEventListener('mouseup', () => {
-  isPanning = false;
-  viewport.style.cursor = 'grab';
+  if (isPanning) {
+    isPanning = false;
+    viewport.style.cursor = 'grab';
+  }
+});
+
+viewport.addEventListener('mouseleave', () => {
+  if (isPanning) {
+    isPanning = false;
+    viewport.style.cursor = 'grab';
+  }
 });
 
 window.addEventListener('mousemove', (e) => {
@@ -547,10 +554,6 @@ function paintCell(x, y, color) {
   if (!gridCtx) return;
   gridCtx.fillStyle = color;
   gridCtx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-  // Redraw grid line borders for this cell
-  gridCtx.strokeStyle = 'rgba(203, 213, 224, 0.4)';
-  gridCtx.lineWidth = 0.5;
-  gridCtx.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 }
 
 function updateTurnsDisplay() {
