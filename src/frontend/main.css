@@ -74,13 +74,14 @@ body {
   letter-spacing: -0.5px;
 }
 
-.brand-icon {
-  display: inline-flex;
-  width: 28px;
-  height: 28px;
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 20%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   animation: float 3s ease-in-out infinite;
+  object-fit: cover;
 }
-.brand-icon svg { width: 100%; height: 100%; }
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
@@ -947,10 +948,9 @@ body {
     grid-column: 1;
   }
   
-  .brand-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .brand-logo {
+    width: 32px;
+    height: 32px;
   }
   
   .brand-text {
